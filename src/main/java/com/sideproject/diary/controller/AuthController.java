@@ -21,7 +21,7 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/signin")
+    @PostMapping("/login")
     public ResponseEntity<ApiResponse<JwtAuthenticationResponse>> authenticateUser(
             @Valid @RequestBody LoginRequest loginRequest) {
 
