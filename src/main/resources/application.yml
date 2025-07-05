@@ -1,7 +1,11 @@
 app:
   jwt:
-    secret: mySecretKey1234567890abcdefghijklmnopqrstuvwxyz
-    expiration: 86400000
+    # JWT ??? ? (??????? ???? ?? ??)
+    secret: mySecretKeyThatIsLongEnoughForHS512AlgorithmAndShouldBeKeptSecureInProductionEnvironment
+    # Access Token ???? (15? = 900000ms)
+    accessTokenExpiration: 900000
+    # Refresh Token ???? (7? = 604800000ms)
+    refreshTokenExpiration: 604800000
 
 spring:
   datasource:
