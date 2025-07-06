@@ -46,6 +46,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             log.error("Could not set user authentication in security context", e);
+            // 인증 실패 시 SecurityContext 정리
+            SecurityContextHolder.clearContext();
         }
 
         // 중요: 항상 다음 필터로 진행해야 함

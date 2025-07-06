@@ -18,21 +18,38 @@ public class JwtTokenProvider {
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwt.expiration}")
-    private int jwtExpirationInMs;
+    @Value("${app.jwt.accessTokenExpiration}")
+    private int accessTokenExpirationInMs; // 15분 = 900000
+
+    @Value("${app.jwt.refreshTokenExpiration}")
+    private int refreshTokenExpirationInMs; // 7일 = 604800000
+
 
     public String generateToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
-        Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationInMs);
+        Date expiryDate = new Date(System.currentTimeMillis() + accessTokenExpirationInMs);
 
         return Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.ES512)
+                .claim("type","access")
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
 
     }
+
+    public String generateRefreshToken() {
+        Date expiryDate = new Date(System.currentTimeMillis() + refreshTokenExpirationInMs);
+
+        return Jwts.builder()
+                .setIssuedAt(new Date())
+                .setExpiration(expiryDate)
+                .claim("type", "refresh")
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
 
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
@@ -64,7 +81,14 @@ public class JwtTokenProvider {
     }
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        // JWT secret이 충분히 길지 않을 경우를 대비해 패딩 추가
+        byte[] keyBytes = jwtSecret.getBytes();
+        if (keyBytes.length < 64) { // HS512는 최소 512bit(64byte) 필요
+            byte[] paddedKey = new byte[64];
+            System.arraycopy(keyBytes, 0, paddedKey, 0, Math.min(keyBytes.length, 64));
+            return Keys.hmacShaKeyFor(paddedKey);
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
 }
