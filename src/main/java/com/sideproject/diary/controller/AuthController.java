@@ -1,10 +1,7 @@
 package com.sideproject.diary.controller;
 
 
-import com.sideproject.diary.dto.ApiResponse;
-import com.sideproject.diary.dto.JwtAuthenticationResponse;
-import com.sideproject.diary.dto.LoginRequest;
-import com.sideproject.diary.dto.SignUpRequest;
+import com.sideproject.diary.dto.*;
 import com.sideproject.diary.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,5 +40,26 @@ public class AuthController {
                 .body(response);
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<JwtAuthenticationResponse>> refreshToken(
+            @Valid @RequestBody TokenRefreshRequest request) {
+
+        ApiResponse<JwtAuthenticationResponse> response = authService.refreshToken(request);
+
+        return ResponseEntity
+                .status(response.getStatusCode())
+                .body(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Valid @RequestBody TokenRefreshRequest request) {
+
+        ApiResponse<Void> response = authService.logout(request.getRefreshToken());
+
+        return ResponseEntity
+                .status(response.getStatusCode())
+                .body(response);
+    }
 
 }
